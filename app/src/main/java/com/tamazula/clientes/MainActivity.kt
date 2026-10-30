@@ -53,10 +53,18 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    mostrarLogin()
-}
 
+    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+    token = getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
+        .getString("token", "") ?: ""
+
+    if (token.isNotEmpty()) {
+        cargarPlaylist()
+    } else {
+        mostrarLogin()
+    }
+}
     private fun prepararPantalla(): LinearLayout {
         fondo = LinearLayout(this)
         fondo.orientation = LinearLayout.VERTICAL
