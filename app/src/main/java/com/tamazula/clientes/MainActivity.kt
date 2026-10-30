@@ -428,23 +428,57 @@ class MainActivity : Activity() {
         setContentView(fondo)
     }
 
-    private fun cambiarPantallaCompleta() {
-        val vista = reproductorVista ?: return
+   private fun cambiarPantallaCompleta() {
+    val vista = reproductorVista ?: return
 
-        if (!pantallaCompleta) {
-            requestedOrientation =
-    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    if (!pantallaCompleta) {
 
-            val pantalla = FrameLayout(this)
-            pantalla.setBackgroundColor(Color.BLACK)
+        val pantalla = FrameLayout(this)
+        pantalla.setBackgroundColor(Color.BLACK)
 
-            // Retirar la vista de su contenedor anterior
-            (vista.parent as? ViewGroup)?.removeView(vista)
+        (vista.parent as? ViewGroup)?.removeView(vista)
 
-            vista.layoutParams = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
+        vista.layoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+
+        pantalla.addView(vista)
+
+        pantallaCompleta = true
+        setContentView(pantalla)
+
+        requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+        window.decorView.systemUiVisibility =
+            (View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+
+    } else {
+
+        val contenedor = fondo
+
+        (vista.parent as? ViewGroup)?.removeView(vista)
+
+        vista.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(220)
+        )
+
+        contenedor.addView(vista)
+
+        pantallaCompleta = false
+        setContentView(contenedor)
+
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_VISIBLE
+
+        requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    }
+}
 
             pantalla.addView(vista)
 
