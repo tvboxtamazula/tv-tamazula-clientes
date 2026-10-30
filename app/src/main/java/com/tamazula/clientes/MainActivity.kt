@@ -314,8 +314,22 @@ vista.setBackgroundColor(Color.BLACK)
 reproductorVista = vista
 fondo.addView(vista)
 
-reproductor = ExoPlayer.Builder(this).build()
+reproductor = ExoPlayer.Builder(this)
+    .build()
+
 vista.player = reproductor
+
+reproductor?.addListener(
+    object : Player.Listener {
+        override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+            Toast.makeText(
+                this@MainActivity,
+                "Error de reproducción: ${error.errorCodeName}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+)
 
         val estado = TextView(this)
         estado.text = "Selecciona un canal para reproducir"
