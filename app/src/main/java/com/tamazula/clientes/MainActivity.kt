@@ -80,6 +80,7 @@ class MainActivity : Activity() {
     private fun mostrarLogin() {
         liberarReproductor()
         prepararPantalla()
+        fondo.gravity = Gravity.CENTER
 
         val tituloLogin = TextView(this)
         tituloLogin.text = "TV TAMAZULA CLIENTES"
