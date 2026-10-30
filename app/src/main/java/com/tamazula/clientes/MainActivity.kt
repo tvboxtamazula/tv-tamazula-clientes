@@ -318,6 +318,10 @@ reproductor = ExoPlayer.Builder(this)
     .build()
 
 vista.player = reproductor
+        vista.useController = true
+vista.controllerAutoShow = true
+vista.controllerShowTimeoutMs = 5000
+vista.resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
 
 reproductor?.addListener(
     object : Player.Listener {
