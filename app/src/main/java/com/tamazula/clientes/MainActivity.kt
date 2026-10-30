@@ -300,17 +300,21 @@ class MainActivity : Activity() {
         fondo.addView(titulo)
 
         // Reproductor de video
-        reproductorVista = PlayerView(this)
-        reproductorVista.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(220)
-        )
+        // Reproductor de video
+val vista = PlayerView(this)
 
-        reproductorVista.setBackgroundColor(Color.BLACK)
-        fondo.addView(reproductorVista)
+vista.layoutParams = LinearLayout.LayoutParams(
+    ViewGroup.LayoutParams.MATCH_PARENT,
+    dp(220)
+)
 
-        reproductor = ExoPlayer.Builder(this).build()
-        reproductorVista.player = reproductor
+vista.setBackgroundColor(Color.BLACK)
+
+reproductorVista = vista
+fondo.addView(vista)
+
+reproductor = ExoPlayer.Builder(this).build()
+vista.player = reproductor
 
         val estado = TextView(this)
         estado.text = "Selecciona un canal para reproducir"
