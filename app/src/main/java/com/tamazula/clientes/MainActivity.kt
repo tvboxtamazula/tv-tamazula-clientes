@@ -5,6 +5,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.graphics.Color
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import org.json.JSONObject
@@ -16,6 +17,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.media3.ui.AspectRatioFrameLayout
 
 data class Canal(
     val nombre: String,
@@ -35,16 +37,21 @@ class MainActivity : Activity() {
     private lateinit var mensaje: TextView
     private lateinit var lista: ListView
     private lateinit var categorias: Spinner
+    private lateinit var estado: TextView
+    private lateinit var botonPantalla: Button
+    private lateinit var titulo: TextView
+
     private var reproductorVista: PlayerView? = null
     private var reproductor: ExoPlayer? = null
     private var pantallaCompleta = false
+    private var ultimaCategoria = "Todas"
+    private var canalActual: Canal? = null
 
     private val blanco = Color.WHITE
     private val oscuro = Color.rgb(15, 15, 20)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.e("TVTAMAZULA", "MAIN ACTIVITY INICIADA")
         mostrarLogin()
     }
 
@@ -60,12 +67,12 @@ class MainActivity : Activity() {
         liberarReproductor()
         prepararPantalla()
 
-        val titulo = TextView(this)
-        titulo.text = "TV TAMAZULA CLIENTES"
-        titulo.textSize = 26f
-        titulo.setTextColor(blanco)
-        titulo.gravity = Gravity.CENTER
-        fondo.addView(titulo)
+        val tituloLogin = TextView(this)
+        tituloLogin.text = "TV TAMAZULA CLIENTES"
+        tituloLogin.textSize = 26f
+        tituloLogin.setTextColor(blanco)
+        tituloLogin.gravity = Gravity.CENTER
+        fondo.addView(tituloLogin)
 
         val usuario = EditText(this)
         usuario.hint = "Usuario"
@@ -281,9 +288,7 @@ class MainActivity : Activity() {
                 !linea.startsWith("#") &&
                 nombre.isNotBlank()
             ) {
-                resultado.add(
-                    Canal(nombre, categoria, linea)
-                )
+                resultado.add(Canal(nombre, categoria, linea))
                 nombre = ""
             }
         }
@@ -293,81 +298,55 @@ class MainActivity : Activity() {
 
     private fun mostrarCanales() {
         if (reproductor == null) {
-    liberarReproductor()
-}
-fondo.removeAllViews()
+            reproductor = ExoPlayer.Builder(this).build()
+            reproductor?.addListener(
+                object : Player.Listener {
+                    override fun onPlayerError(
+                        error: androidx.media3.common.PlaybackException
+                    ) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Error: ${error.errorCodeName}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            )
+        }
 
-        val titulo = TextView(this)
+        prepararPantalla()
+
+        titulo = TextView(this)
         titulo.text = "TV TAMAZULA"
         titulo.textSize = 24f
         titulo.setTextColor(blanco)
         fondo.addView(titulo)
 
-        // Reproductor de video
-        // Reproductor de video
-val vista = PlayerView(this)
-
-vista.layoutParams = LinearLayout.LayoutParams(
-    ViewGroup.LayoutParams.MATCH_PARENT,
-    dp(220)
-)
-
-vista.setBackgroundColor(Color.BLACK)
-
-reproductorVista = vista
-fondo.addView(vista)
-
-reproductor = ExoPlayer.Builder(this)
-    .build()
-
-vista.player = reproductor
+        val vista = PlayerView(this)
+        vista.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(220)
+        )
+        vista.setBackgroundColor(Color.BLACK)
         vista.useController = true
-        val botonPantalla = Button(this)
-botonPantalla.text = "⛶ PANTALLA COMPLETA"
+        vista.controllerAutoShow = true
+        vista.controllerShowTimeoutMs = 5000
+        vista.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        vista.player = reproductor
 
-botonPantalla.setOnClickListener {
-    pantallaCompleta = !pantallaCompleta
+        reproductorVista = vista
+        fondo.addView(vista)
 
-    if (pantallaCompleta) {
-        window.decorView.systemUiVisibility =
-            (android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-            or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            or android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-
-        fondo.removeView(titulo)
-        fondo.removeView(botonPantalla)
-        fondo.removeView(estado)
-        fondo.removeView(categorias)
-        fondo.removeView(lista)
-
-        setContentView(vista)
-    } else {
-        window.decorView.systemUiVisibility =
-            android.view.View.SYSTEM_UI_FLAG_VISIBLE
-
-        mostrarCanales()
-    }
-}
-
-fondo.addView(botonPantalla)
-vista.controllerAutoShow = true
-vista.controllerShowTimeoutMs = 5000
-vista.resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-
-reproductor?.addListener(
-    object : Player.Listener {
-        override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-            Toast.makeText(
-                this@MainActivity,
-                "Error de reproducción: ${error.errorCodeName}",
-                Toast.LENGTH_LONG
-            ).show()
+        botonPantalla = Button(this)
+        botonPantalla.text = "⛶ PANTALLA COMPLETA"
+        botonPantalla.setOnClickListener {
+            cambiarPantallaCompleta()
         }
-    }
-)
+        fondo.addView(botonPantalla)
 
-        val estado = TextView(this)
-        estado.text = "Selecciona un canal para reproducir"
+        estado = TextView(this)
+        estado.text = canalActual?.nombre
+            ?: "Selecciona un canal para reproducir"
         estado.textSize = 14f
         estado.setTextColor(blanco)
         estado.setPadding(0, 10, 0, 10)
@@ -385,7 +364,6 @@ reproductor?.addListener(
         fondo.addView(categorias)
 
         lista = ListView(this)
-
         fondo.addView(
             lista,
             LinearLayout.LayoutParams(
@@ -397,18 +375,18 @@ reproductor?.addListener(
 
         categorias.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
-
                 override fun onNothingSelected(
                     parent: android.widget.AdapterView<*>?
                 ) {}
 
                 override fun onItemSelected(
                     parent: android.widget.AdapterView<*>?,
-                    view: android.view.View?,
+                    view: View?,
                     position: Int,
                     id: Long
                 ) {
-                    actualizarCanales(nombres[position])
+                    ultimaCategoria = nombres[position]
+                    actualizarCanales(ultimaCategoria)
                 }
             }
 
@@ -421,11 +399,49 @@ reproductor?.addListener(
                 canales.filter { it.categoria == categoria }
             }
 
-            val canal = filtrados[position]
-            reproducirCanal(canal)
+            if (position in filtrados.indices) {
+                reproducirCanal(filtrados[position])
+            }
         }
 
-        actualizarCanales("Todas")
+        val posicion = nombres.indexOf(ultimaCategoria)
+            .coerceAtLeast(0)
+        categorias.setSelection(posicion)
+        actualizarCanales(ultimaCategoria)
+
+        setContentView(fondo)
+    }
+
+    private fun cambiarPantallaCompleta() {
+        val vista = reproductorVista ?: return
+
+        if (!pantallaCompleta) {
+            pantallaCompleta = true
+
+            val pantalla = FrameLayout(this)
+            pantalla.setBackgroundColor(Color.BLACK)
+
+            vista.layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            pantalla.addView(vista)
+            setContentView(pantalla)
+
+            window.decorView.systemUiVisibility =
+                (View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+
+        } else {
+            pantallaCompleta = false
+
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_VISIBLE
+
+            mostrarCanales()
+        }
     }
 
     private fun actualizarCanales(categoria: String) {
@@ -442,49 +458,47 @@ reproductor?.addListener(
         )
     }
 
-   private fun reproducirCanal(canal: Canal) {
-    Toast.makeText(
-        this,
-        "Abriendo: ${canal.nombre}",
-        Toast.LENGTH_SHORT
-    ).show()
+    private fun reproducirCanal(canal: Canal) {
+        try {
+            val reproductorActual = reproductor ?: return
 
-    try {
-        val reproductorActual = reproductor
+            canalActual = canal
+            estado.text = "Reproduciendo: ${canal.nombre}"
 
-        if (reproductorActual == null) {
+            reproductorActual.setMediaItem(
+                MediaItem.fromUri(canal.url)
+            )
+            reproductorActual.prepare()
+            reproductorActual.play()
+
+        } catch (e: Exception) {
             Toast.makeText(
                 this,
-                "El reproductor no está inicializado",
+                "Error: ${e.message}",
                 Toast.LENGTH_LONG
             ).show()
-            return
         }
-
-        val elemento = MediaItem.fromUri(canal.url)
-        android.util.Log.e("TVTAMAZULA", "URL DEL CANAL: ${canal.url}")
-
-        reproductorActual.setMediaItem(elemento)
-        reproductorActual.prepare()
-        reproductorActual.play()
-
-    } catch (e: Exception) {
-        Toast.makeText(
-            this,
-            "Error: ${e.message}",
-            Toast.LENGTH_LONG
-        ).show()
     }
-}
 
     private fun liberarReproductor() {
         reproductorVista?.player = null
+        reproductorVista = null
         reproductor?.release()
         reproductor = null
+        pantallaCompleta = false
+        canalActual = null
     }
 
     private fun dp(valor: Int): Int {
         return (valor * resources.displayMetrics.density).toInt()
+    }
+
+    override fun onBackPressed() {
+        if (pantallaCompleta) {
+            cambiarPantallaCompleta()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onStop() {
@@ -497,4 +511,3 @@ reproductor?.addListener(
         super.onDestroy()
     }
 }
-
