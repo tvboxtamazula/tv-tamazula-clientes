@@ -292,8 +292,10 @@ class MainActivity : Activity() {
     }
 
     private fun mostrarCanales() {
-        liberarReproductor()
-        fondo.removeAllViews()
+        if (reproductor == null) {
+    liberarReproductor()
+}
+fondo.removeAllViews()
 
         val titulo = TextView(this)
         titulo.text = "TV TAMAZULA"
