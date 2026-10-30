@@ -52,11 +52,10 @@ class MainActivity : Activity() {
     private val oscuro = Color.rgb(15, 15, 20)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        requestedOrientation =
-    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        super.onCreate(savedInstanceState)
-        mostrarLogin()
-    }
+    super.onCreate(savedInstanceState)
+    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    mostrarLogin()
+}
 
     private fun prepararPantalla(): LinearLayout {
         fondo = LinearLayout(this)
