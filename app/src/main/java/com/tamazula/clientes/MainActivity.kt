@@ -398,6 +398,8 @@ class MainActivity : Activity() {
             val filtrados = if (categoria == "Todas") {
                 canales
             } else {
+                requestedOrientation =
+    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 canales.filter { it.categoria == categoria }
             }
 
@@ -419,6 +421,8 @@ class MainActivity : Activity() {
         val vista = reproductorVista ?: return
 
         if (!pantallaCompleta) {
+            requestedOrientation =
+    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             val pantalla = FrameLayout(this)
             pantalla.setBackgroundColor(Color.BLACK)
