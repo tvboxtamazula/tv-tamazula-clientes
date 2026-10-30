@@ -157,6 +157,8 @@ class MainActivity : Activity() {
                     }
 
                     token = nuevoToken
+                    getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
+    .edit().putString("token", token).apply()
 
                     runOnUiThread {
                         cargarPlaylist()
