@@ -43,6 +43,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        android.util.Log.e("TVTAMAZULA", "MAIN ACTIVITY INICIADA")
         mostrarLogin()
     }
 
