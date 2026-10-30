@@ -37,6 +37,7 @@ class MainActivity : Activity() {
     private lateinit var categorias: Spinner
     private var reproductorVista: PlayerView? = null
     private var reproductor: ExoPlayer? = null
+    private var pantallaCompleta = false
 
     private val blanco = Color.WHITE
     private val oscuro = Color.rgb(15, 15, 20)
