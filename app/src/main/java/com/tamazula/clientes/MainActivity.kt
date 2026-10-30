@@ -99,6 +99,7 @@ fondo.addView(logo)
 
         val usuario = EditText(this)
         usuario.hint = "Usuario"
+        usuario.gravity = Gravity.CENTER
         usuario.setSingleLine(true)
         usuario.setTextColor(blanco)
         usuario.setHintTextColor(Color.LTGRAY)
@@ -106,6 +107,7 @@ fondo.addView(logo)
 
         val clave = EditText(this)
         clave.hint = "Contraseña"
+        clave.gravity = Gravity.CENTER
         clave.inputType = 129
         clave.setSingleLine(true)
         clave.setTextColor(blanco)
