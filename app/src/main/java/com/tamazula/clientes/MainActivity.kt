@@ -5,11 +5,17 @@ import android.app.Activity
 import android.os.Bundle
 import android.graphics.Color
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.*
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 
 data class Canal(
     val nombre: String,
@@ -29,6 +35,9 @@ class MainActivity : Activity() {
     private lateinit var mensaje: TextView
     private lateinit var lista: ListView
     private lateinit var categorias: Spinner
+    private lateinit var reproductorVista: PlayerView
+
+    private var reproductor: ExoPlayer? = null
 
     private val blanco = Color.WHITE
     private val oscuro = Color.rgb(15, 15, 20)
@@ -41,12 +50,13 @@ class MainActivity : Activity() {
     private fun prepararPantalla(): LinearLayout {
         fondo = LinearLayout(this)
         fondo.orientation = LinearLayout.VERTICAL
-        fondo.setPadding(24, 25, 24, 25)
+        fondo.setPadding(24, 20, 24, 20)
         fondo.setBackgroundColor(oscuro)
         return fondo
     }
 
     private fun mostrarLogin() {
+        liberarReproductor()
         prepararPantalla()
 
         val titulo = TextView(this)
@@ -122,6 +132,8 @@ class MainActivity : Activity() {
                         it.readText()
                     }
 
+                    conexion.disconnect()
+
                     val resultado = JSONObject(respuesta)
                     val nuevoToken = resultado.optString("token", "")
 
@@ -135,7 +147,6 @@ class MainActivity : Activity() {
                     }
 
                     token = nuevoToken
-                    conexion.disconnect()
 
                     runOnUiThread {
                         cargarPlaylist()
@@ -154,6 +165,7 @@ class MainActivity : Activity() {
     }
 
     private fun cargarPlaylist() {
+        liberarReproductor()
         fondo.removeAllViews()
 
         mensaje = TextView(this)
@@ -183,6 +195,8 @@ class MainActivity : Activity() {
                     it.readText()
                 }
 
+                conexion.disconnect()
+
                 if (codigo !in 200..299) {
                     val error = JSONObject(respuesta)
                     throw Exception(
@@ -194,8 +208,6 @@ class MainActivity : Activity() {
                 val tipo = playlist.getString("source_type")
                 val contenido = playlist.getString("content")
 
-                conexion.disconnect()
-
                 val textoM3u = if (tipo == "url") {
                     val descarga = URL(contenido)
                         .openConnection() as HttpURLConnection
@@ -203,9 +215,11 @@ class MainActivity : Activity() {
                     descarga.connectTimeout = 20000
                     descarga.readTimeout = 30000
 
-                    descarga.inputStream.bufferedReader().use {
-                        it.readText()
-                    }.also {
+                    try {
+                        descarga.inputStream.bufferedReader().use {
+                            it.readText()
+                        }
+                    } finally {
                         descarga.disconnect()
                     }
                 } else {
@@ -224,12 +238,14 @@ class MainActivity : Activity() {
                 runOnUiThread {
                     fondo.removeAllViews()
                     mensaje.text = e.message ?: "Error al cargar programación"
+
                     val salir = Button(this)
                     salir.text = "VOLVER"
                     salir.setOnClickListener {
                         token = ""
                         mostrarLogin()
                     }
+
                     fondo.addView(mensaje)
                     fondo.addView(salir)
                 }
@@ -248,10 +264,12 @@ class MainActivity : Activity() {
             val linea = lineaOriginal.trim()
 
             if (linea.startsWith("#EXTINF", ignoreCase = true)) {
-                val grupo = Regex("""group-title="([^"]*)"""")
+                val grupo = Regex("group-title=\"([^\"]*)\"")
                     .find(linea)?.groupValues?.get(1)
 
-                categoria = grupo?.takeIf { it.isNotBlank() } ?: "Otros"
+                categoria = grupo?.takeIf {
+                    it.isNotBlank()
+                } ?: "Otros"
 
                 nombre = linea.substringAfterLast(",")
                     .trim()
@@ -273,6 +291,7 @@ class MainActivity : Activity() {
     }
 
     private fun mostrarCanales() {
+        liberarReproductor()
         fondo.removeAllViews()
 
         val titulo = TextView(this)
@@ -281,8 +300,28 @@ class MainActivity : Activity() {
         titulo.setTextColor(blanco)
         fondo.addView(titulo)
 
-        val nombres = (listOf("Todas") +
-            canales.map { it.categoria }.distinct().sorted())
+        // Reproductor de video
+        reproductorVista = PlayerView(this)
+        reproductorVista.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(220)
+        )
+
+        reproductorVista.setBackgroundColor(Color.BLACK)
+        fondo.addView(reproductorVista)
+
+        reproductor = ExoPlayer.Builder(this).build()
+        reproductorVista.player = reproductor
+
+        val estado = TextView(this)
+        estado.text = "Selecciona un canal para reproducir"
+        estado.textSize = 14f
+        estado.setTextColor(blanco)
+        estado.setPadding(0, 10, 0, 10)
+        fondo.addView(estado)
+
+        val nombres = listOf("Todas") +
+            canales.map { it.categoria }.distinct().sorted()
 
         categorias = Spinner(this)
         categorias.adapter = ArrayAdapter(
@@ -293,6 +332,7 @@ class MainActivity : Activity() {
         fondo.addView(categorias)
 
         lista = ListView(this)
+
         fondo.addView(
             lista,
             LinearLayout.LayoutParams(
@@ -304,6 +344,7 @@ class MainActivity : Activity() {
 
         categorias.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
+
                 override fun onNothingSelected(
                     parent: android.widget.AdapterView<*>?
                 ) {}
@@ -317,6 +358,19 @@ class MainActivity : Activity() {
                     actualizarCanales(nombres[position])
                 }
             }
+
+        lista.setOnItemClickListener { _, _, position, _ ->
+            val categoria = categorias.selectedItem?.toString() ?: "Todas"
+
+            val filtrados = if (categoria == "Todas") {
+                canales
+            } else {
+                canales.filter { it.categoria == categoria }
+            }
+
+            val canal = filtrados[position]
+            reproducirCanal(canal)
+        }
 
         actualizarCanales("Todas")
     }
@@ -334,4 +388,44 @@ class MainActivity : Activity() {
             filtrados.map { it.nombre }
         )
     }
+
+    private fun reproducirCanal(canal: Canal) {
+        try {
+            val reproductorActual = reproductor ?: return
+
+            val elemento = MediaItem.fromUri(canal.url)
+
+            reproductorActual.setMediaItem(elemento)
+            reproductorActual.prepare()
+            reproductorActual.play()
+
+        } catch (e: Exception) {
+            Toast.makeText(
+                this,
+                "No se pudo abrir el canal: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun liberarReproductor() {
+        reproductorVista?.player = null
+        reproductor?.release()
+        reproductor = null
+    }
+
+    private fun dp(valor: Int): Int {
+        return (valor * resources.displayMetrics.density).toInt()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        reproductor?.pause()
+    }
+
+    override fun onDestroy() {
+        liberarReproductor()
+        super.onDestroy()
+    }
 }
+
