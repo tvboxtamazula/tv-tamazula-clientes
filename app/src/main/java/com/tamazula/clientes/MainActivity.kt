@@ -2,6 +2,7 @@
 package com.tamazula.clientes
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.graphics.Color
 import android.view.Gravity
