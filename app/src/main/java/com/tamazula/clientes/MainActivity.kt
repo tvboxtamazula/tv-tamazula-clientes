@@ -320,6 +320,34 @@ reproductor = ExoPlayer.Builder(this)
 
 vista.player = reproductor
         vista.useController = true
+        val botonPantalla = Button(this)
+botonPantalla.text = "⛶ PANTALLA COMPLETA"
+
+botonPantalla.setOnClickListener {
+    pantallaCompleta = !pantallaCompleta
+
+    if (pantallaCompleta) {
+        window.decorView.systemUiVisibility =
+            (android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+            or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+
+        fondo.removeView(titulo)
+        fondo.removeView(botonPantalla)
+        fondo.removeView(estado)
+        fondo.removeView(categorias)
+        fondo.removeView(lista)
+
+        setContentView(vista)
+    } else {
+        window.decorView.systemUiVisibility =
+            android.view.View.SYSTEM_UI_FLAG_VISIBLE
+
+        mostrarCanales()
+    }
+}
+
+fondo.addView(botonPantalla)
 vista.controllerAutoShow = true
 vista.controllerShowTimeoutMs = 5000
 vista.resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
