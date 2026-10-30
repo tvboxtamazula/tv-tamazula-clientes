@@ -413,6 +413,7 @@ vista.player = reproductor
         }
 
         val elemento = MediaItem.fromUri(canal.url)
+        android.util.Log.e("TVTAMAZULA", "URL DEL CANAL: ${canal.url}")
 
         reproductorActual.setMediaItem(elemento)
         reproductorActual.prepare()
