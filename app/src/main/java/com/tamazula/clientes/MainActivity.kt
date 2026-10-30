@@ -35,8 +35,7 @@ class MainActivity : Activity() {
     private lateinit var mensaje: TextView
     private lateinit var lista: ListView
     private lateinit var categorias: Spinner
-    private lateinit var reproductorVista: PlayerView
-
+    private var reproductorVista: PlayerView? = null
     private var reproductor: ExoPlayer? = null
 
     private val blanco = Color.WHITE
