@@ -81,6 +81,14 @@ class MainActivity : Activity() {
         liberarReproductor()
         prepararPantalla()
         fondo.gravity = Gravity.CENTER
+        val logo = ImageView(this)
+logo.setImageResource(R.drawable.tv_tamazula_logo)
+logo.layoutParams = LinearLayout.LayoutParams(
+    dp(150),
+    dp(150)
+)
+logo.scaleType = ImageView.ScaleType.FIT_CENTER
+fondo.addView(logo)
 
         val tituloLogin = TextView(this)
         tituloLogin.text = "TV TAMAZULA CLIENTES"
