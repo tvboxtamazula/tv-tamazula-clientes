@@ -393,24 +393,39 @@ vista.player = reproductor
         )
     }
 
-    private fun reproducirCanal(canal: Canal) {
-        try {
-            val reproductorActual = reproductor ?: return
+   private fun reproducirCanal(canal: Canal) {
+    Toast.makeText(
+        this,
+        "Abriendo: ${canal.nombre}",
+        Toast.LENGTH_SHORT
+    ).show()
 
-            val elemento = MediaItem.fromUri(canal.url)
+    try {
+        val reproductorActual = reproductor
 
-            reproductorActual.setMediaItem(elemento)
-            reproductorActual.prepare()
-            reproductorActual.play()
-
-        } catch (e: Exception) {
+        if (reproductorActual == null) {
             Toast.makeText(
                 this,
-                "No se pudo abrir el canal: ${e.message}",
+                "El reproductor no está inicializado",
                 Toast.LENGTH_LONG
             ).show()
+            return
         }
+
+        val elemento = MediaItem.fromUri(canal.url)
+
+        reproductorActual.setMediaItem(elemento)
+        reproductorActual.prepare()
+        reproductorActual.play()
+
+    } catch (e: Exception) {
+        Toast.makeText(
+            this,
+            "Error: ${e.message}",
+            Toast.LENGTH_LONG
+        ).show()
     }
+}
 
     private fun liberarReproductor() {
         reproductorVista?.player = null
