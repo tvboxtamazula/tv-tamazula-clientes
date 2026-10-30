@@ -21,7 +21,7 @@ jobs:
           java-version: 17
 
       - name: Configurar Gradle
-       uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Crear APK
         run: gradle wrapper --gradle-version 8.9 && ./gradlew assembleDebug
