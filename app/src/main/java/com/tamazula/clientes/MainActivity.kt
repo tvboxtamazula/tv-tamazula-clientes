@@ -601,7 +601,37 @@ fondo.addView(botonLogout)
         pantallaCompleta = false
         canalActual = null
     }
+private fun confirmarCerrarSesion() {
+    android.app.AlertDialog.Builder(this)
+        .setTitle("Cerrar sesión")
+        .setMessage("¿Deseas salir de tu cuenta?")
+        .setPositiveButton("SÍ, CERRAR SESIÓN") { _, _ ->
+            cerrarSesion()
+        }
+        .setNegativeButton("CANCELAR", null)
+        .show()
+}
 
+private fun cerrarSesion() {
+    liberarReproductor()
+
+    token = ""
+    canales.clear()
+    ultimaCategoria = "Todas"
+
+    getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
+        .edit()
+        .remove("token")
+        .apply()
+
+    requestedOrientation =
+        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+    window.decorView.systemUiVisibility =
+        View.SYSTEM_UI_FLAG_VISIBLE
+
+    mostrarLogin()
+}
     private fun dp(valor: Int): Int {
         return (valor * resources.displayMetrics.density).toInt()
     }
