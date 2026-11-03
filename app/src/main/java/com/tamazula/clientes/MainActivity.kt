@@ -401,6 +401,21 @@ private fun mostrarLogin() {
         titulo.textSize = 24f
         titulo.setTextColor(blanco)
         fondo.addView(titulo)
+        val botonLogout = Button(this)
+botonLogout.text = "CERRAR SESIÓN"
+botonLogout.textSize = 14f
+botonLogout.setTextColor(Color.WHITE)
+botonLogout.setBackgroundTintList(
+    android.content.res.ColorStateList.valueOf(
+        Color.rgb(190, 35, 35)
+    )
+)
+
+botonLogout.setOnClickListener {
+    confirmarCerrarSesion()
+}
+
+fondo.addView(botonLogout)
 
         val vista = PlayerView(this)
         vista.layoutParams = LinearLayout.LayoutParams(
