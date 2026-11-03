@@ -77,130 +77,175 @@ class MainActivity : Activity() {
         return fondo
     }
 
-    private fun mostrarLogin() {
-        liberarReproductor()
-        prepararPantalla()
-        fondo.gravity = Gravity.CENTER
-        val logo = ImageView(this)
-logo.setImageResource(R.drawable.tv_tamazula_logo)
-logo.layoutParams = LinearLayout.LayoutParams(
-    dp(150),
-    dp(150)
-)
-logo.scaleType = ImageView.ScaleType.FIT_CENTER
-fondo.addView(logo)
+    
+private fun mostrarLogin() {
+    liberarReproductor()
 
-        val tituloLogin = TextView(this)
-        tituloLogin.text = "TV TAMAZULA CLIENTES"
-        tituloLogin.textSize = 26f
-        tituloLogin.setTextColor(blanco)
-        tituloLogin.gravity = Gravity.CENTER
-        fondo.addView(tituloLogin)
+    val pantalla = FrameLayout(this)
 
-        val usuario = EditText(this)
-        usuario.hint = "Usuario"
-        usuario.gravity = Gravity.CENTER
-        usuario.setSingleLine(true)
-        usuario.setTextColor(blanco)
-        usuario.setHintTextColor(Color.LTGRAY)
-        fondo.addView(usuario)
+    // Imagen de fondo
+    val imagen = ImageView(this)
+    imagen.setImageResource(R.drawable.tv_tamazula_login)
+    imagen.scaleType = ImageView.ScaleType.FIT_XY
+    pantalla.addView(
+        imagen,
+        FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+    )
 
-        val clave = EditText(this)
-        clave.hint = "Contraseña"
-        clave.gravity = Gravity.CENTER
-        clave.inputType = 129
-        clave.setSingleLine(true)
-        clave.setTextColor(blanco)
-        clave.setHintTextColor(Color.LTGRAY)
-        fondo.addView(clave)
+    // Campos reales de acceso
+    val usuario = EditText(this).apply {
+        hint = "Usuario"
+        setTextColor(Color.WHITE)
+        setHintTextColor(Color.LTGRAY)
+        textSize = 18f
+        gravity = Gravity.CENTER_VERTICAL
+        setSingleLine(true)
+        background = null
+        setPadding(dp(12), 0, dp(12), 0)
+    }
 
-        val boton = Button(this)
-        boton.text = "INICIAR SESIÓN"
-        fondo.addView(boton)
+    val clave = EditText(this).apply {
+        hint = "Contraseña"
+        setTextColor(Color.WHITE)
+        setHintTextColor(Color.LTGRAY)
+        textSize = 18f
+        gravity = Gravity.CENTER_VERTICAL
+        inputType = 129
+        setSingleLine(true)
+        background = null
+        setPadding(dp(12), 0, dp(12), 0)
+    }
 
-        mensaje = TextView(this)
-        mensaje.setTextColor(blanco)
-        mensaje.gravity = Gravity.CENTER
-        fondo.addView(mensaje)
+    val boton = Button(this).apply {
+        text = "INICIAR SESIÓN"
+        textSize = 18f
+        setTextColor(Color.WHITE)
+        setBackgroundTintList(
+            android.content.res.ColorStateList.valueOf(
+                Color.rgb(0, 119, 255)
+            )
+        )
+    }
 
-        boton.setOnClickListener {
-            val user = usuario.text.toString().trim()
-            val pass = clave.text.toString()
+    mensaje = TextView(this).apply {
+        setTextColor(Color.WHITE)
+        textSize = 14f
+        gravity = Gravity.CENTER
+    }
 
-            if (user.isEmpty() || pass.isEmpty()) {
-                mensaje.text = "Escribe usuario y contraseña"
-                return@setOnClickListener
-            }
+    pantalla.addView(usuario)
+    pantalla.addView(clave)
+    pantalla.addView(boton)
+    pantalla.addView(mensaje)
 
-            boton.isEnabled = false
-            mensaje.text = "Verificando cuenta..."
+    pantalla.post {
+        val ancho = pantalla.width
+        val alto = pantalla.height
 
-            thread {
-                try {
-                    val conexion = URL("$servidor/api/login")
-                        .openConnection() as HttpURLConnection
+        fun colocar(
+            vista: View,
+            x: Float,
+            y: Float,
+            w: Float,
+            h: Float
+        ) {
+            val params = FrameLayout.LayoutParams(
+                (ancho * w).toInt(),
+                (alto * h).toInt()
+            )
+            params.leftMargin = (ancho * x).toInt()
+            params.topMargin = (alto * y).toInt()
+            vista.layoutParams = params
+        }
 
-                    conexion.requestMethod = "POST"
-                    conexion.doOutput = true
-                    conexion.setRequestProperty(
-                        "Content-Type", "application/json"
-                    )
+        colocar(usuario, 0.13f, 0.535f, 0.74f, 0.065f)
+        colocar(clave, 0.13f, 0.625f, 0.74f, 0.065f)
+        colocar(boton, 0.085f, 0.725f, 0.83f, 0.075f)
+        colocar(mensaje, 0.10f, 0.81f, 0.80f, 0.06f)
+    }
 
-                    val datos = JSONObject()
-                    datos.put("username", user)
-                    datos.put("password", pass)
+    boton.setOnClickListener {
+        val user = usuario.text.toString().trim()
+        val pass = clave.text.toString()
 
-                    conexion.outputStream.use {
-                        it.write(datos.toString().toByteArray(Charsets.UTF_8))
-                    }
+        if (user.isEmpty() || pass.isEmpty()) {
+            mensaje.text = "Escribe usuario y contraseña"
+            return@setOnClickListener
+        }
 
-                    val codigo = conexion.responseCode
-                    val flujo = if (codigo in 200..299) {
-                        conexion.inputStream
-                    } else {
-                        conexion.errorStream
-                    }
+        boton.isEnabled = false
+        mensaje.text = "Verificando cuenta..."
 
-                    val respuesta = flujo.bufferedReader().use {
-                        it.readText()
-                    }
+        thread {
+            try {
+                val conexion = URL("$servidor/api/login")
+                    .openConnection() as HttpURLConnection
 
-                    conexion.disconnect()
+                conexion.requestMethod = "POST"
+                conexion.doOutput = true
+                conexion.setRequestProperty(
+                    "Content-Type", "application/json"
+                )
 
-                    val resultado = JSONObject(respuesta)
-                    val nuevoToken = resultado.optString("token", "")
+                val datos = JSONObject()
+                datos.put("username", user)
+                datos.put("password", pass)
 
-                    if (codigo !in 200..299 || nuevoToken.isEmpty()) {
-                        throw Exception(
-                            resultado.optString(
-                                "error",
-                                "No se pudo iniciar sesión"
-                            )
+                conexion.outputStream.use {
+                    it.write(datos.toString().toByteArray(Charsets.UTF_8))
+                }
+
+                val codigo = conexion.responseCode
+                val flujo = if (codigo in 200..299) {
+                    conexion.inputStream
+                } else {
+                    conexion.errorStream
+                }
+
+                val respuesta = flujo.bufferedReader().use {
+                    it.readText()
+                }
+
+                conexion.disconnect()
+
+                val resultado = JSONObject(respuesta)
+                val nuevoToken = resultado.optString("token", "")
+
+                if (codigo !in 200..299 || nuevoToken.isEmpty()) {
+                    throw Exception(
+                        resultado.optString(
+                            "error",
+                            "No se pudo iniciar sesión"
                         )
-                    }
+                    )
+                }
 
-                    token = nuevoToken
+                token = nuevoToken
 
-                    getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
-                        .edit()
-                        .putString("token", token)
-                        .apply()
+                getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
+                    .edit()
+                    .putString("token", token)
+                    .apply()
 
-                    runOnUiThread {
-                        cargarPlaylist()
-                    }
+                runOnUiThread {
+                    cargarPlaylist()
+                }
 
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        boton.isEnabled = true
-                        mensaje.text = e.message ?: "Error de conexión"
-                    }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    boton.isEnabled = true
+                    mensaje.text = e.message ?: "Error de conexión"
                 }
             }
         }
-
-        setContentView(fondo)
     }
+
+    setContentView(pantalla)
+}
+
 
     private fun cargarPlaylist() {
         liberarReproductor()
