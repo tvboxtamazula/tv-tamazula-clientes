@@ -39,6 +39,8 @@ class MainActivity : Activity() {
     private lateinit var mensaje: TextView
     private lateinit var lista: ListView
     private lateinit var categorias: Spinner
+    private lateinit var selectorListas: Spinner
+    private var listaActual = ""
     private lateinit var estado: TextView
     private lateinit var botonPantalla: Button
     private lateinit var titulo: TextView
