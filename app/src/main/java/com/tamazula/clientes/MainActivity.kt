@@ -539,7 +539,23 @@ fondo.addView(selectorListas)
                     actualizarCanales(ultimaCategoria)
                 }
             }
+        selectorListas.onItemSelectedListener =
+            object : android.widget.AdapterView.OnItemSelectedListener {
 
+                override fun onNothingSelected(
+                    parent: android.widget.AdapterView<*>?
+                ) {}
+
+                override fun onItemSelected(
+                    parent: android.widget.AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    listaActual = nombresListas[position]
+                    actualizarCanales(ultimaCategoria)
+                }
+            }
         lista.setOnItemClickListener { _, _, position, _ ->
             val categoria = categorias.selectedItem?.toString() ?: "Todas"
 
