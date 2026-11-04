@@ -23,7 +23,8 @@ import androidx.media3.ui.AspectRatioFrameLayout
 data class Canal(
     val nombre: String,
     val categoria: String,
-    val url: String
+    val url: String,
+    val lista: String = ""
 )
 
 class MainActivity : Activity() {
