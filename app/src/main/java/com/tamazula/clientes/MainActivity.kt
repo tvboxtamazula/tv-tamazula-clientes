@@ -624,19 +624,20 @@ fondo.addView(selectorListas)
         }
     }
 
-    private fun actualizarCanales(categoria: String) {
-        val filtrados = if (categoria == "Todas") {
-            canales
-        } else {
-            canales.filter { it.categoria == categoria }
-        }
-
-        lista.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_list_item_1,
-            filtrados.map { it.nombre }
-        )
+   
+private fun actualizarCanales(categoria: String) {
+    val filtrados = canales.filter {
+        it.lista == listaActual &&
+        (categoria == "Todas" || it.categoria == categoria)
     }
+
+    lista.adapter = ArrayAdapter(
+        this,
+        android.R.layout.simple_list_item_1,
+        filtrados.map { it.nombre }
+    )
+}
+
 
     private fun reproducirCanal(canal: Canal) {
         try {
