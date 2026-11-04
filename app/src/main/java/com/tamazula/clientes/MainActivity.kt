@@ -250,47 +250,70 @@ private fun mostrarLogin() {
 }
 
 
-    private fun cargarPlaylist() {
-        liberarReproductor()
-        fondo.removeAllViews()
+    
+private fun cargarPlaylist() {
+    liberarReproductor()
+    fondo.removeAllViews()
 
-        mensaje = TextView(this)
-        mensaje.text = "Cargando tu programación..."
-        mensaje.textSize = 18f
-        mensaje.setTextColor(blanco)
-        fondo.addView(mensaje)
+    mensaje = TextView(this)
+    mensaje.text = "Cargando tus listas..."
+    mensaje.textSize = 18f
+    mensaje.setTextColor(blanco)
+    fondo.addView(mensaje)
 
-        thread {
-            try {
-                val conexion = URL("$servidor/api/my-playlist")
-                    .openConnection() as HttpURLConnection
+    thread {
+        try {
+            val conexion = URL("$servidor/api/my-playlists")
+                .openConnection() as HttpURLConnection
 
-                conexion.requestMethod = "GET"
-                conexion.setRequestProperty(
-                    "Authorization", "Bearer $token"
+            conexion.requestMethod = "GET"
+            conexion.connectTimeout = 20000
+            conexion.readTimeout = 30000
+            conexion.setRequestProperty(
+                "Authorization", "Bearer $token"
+            )
+
+            val codigo = conexion.responseCode
+            val flujo = if (codigo in 200..299) {
+                conexion.inputStream
+            } else {
+                conexion.errorStream
+            }
+
+            val respuesta = flujo.bufferedReader().use {
+                it.readText()
+            }
+
+            conexion.disconnect()
+
+            if (codigo !in 200..299) {
+                val error = JSONObject(respuesta)
+                throw Exception(
+                    error.optString(
+                        "error",
+                        "No se pudieron cargar tus listas"
+                    )
+                )
+            }
+
+            val objeto = JSONObject(respuesta)
+            val listasJson = objeto.optJSONArray("playlists")
+                ?: throw Exception("El servidor no devolvió las listas")
+
+            if (listasJson.length() == 0) {
+                throw Exception("No tienes listas asignadas")
+            }
+
+            val todosLosCanales = mutableListOf<Canal>()
+
+            for (i in 0 until listasJson.length()) {
+                val playlist = listasJson.getJSONObject(i)
+
+                val nombreLista = playlist.optString(
+                    "name",
+                    "Lista ${i + 1}"
                 )
 
-                val codigo = conexion.responseCode
-                val flujo = if (codigo in 200..299) {
-                    conexion.inputStream
-                } else {
-                    conexion.errorStream
-                }
-
-                val respuesta = flujo.bufferedReader().use {
-                    it.readText()
-                }
-
-                conexion.disconnect()
-
-                if (codigo !in 200..299) {
-                    val error = JSONObject(respuesta)
-                    throw Exception(
-                        error.optString("error", "No se pudo cargar la lista")
-                    )
-                }
-
-                val playlist = JSONObject(respuesta)
                 val tipo = playlist.getString("source_type")
                 val contenido = playlist.getString("content")
 
@@ -312,36 +335,48 @@ private fun mostrarLogin() {
                     contenido
                 }
 
-                val resultado = leerM3U(textoM3u)
-
-                runOnUiThread {
-                    canales.clear()
-                    canales.addAll(resultado)
-                    mostrarCanales()
+                val canalesLista = leerM3U(textoM3u).map {
+                    it.copy(lista = nombreLista)
                 }
 
-            } catch (e: Exception) {
-                runOnUiThread {
-                    fondo.removeAllViews()
-                    mensaje.text = e.message ?: "Error al cargar programación"
+                todosLosCanales.addAll(canalesLista)
+            }
 
-                    val salir = Button(this)
-                    salir.text = "VOLVER"
-                    salir.setOnClickListener {
-                        token = ""
-                        getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
-                            .edit()
-                            .remove("token")
-                            .apply()
-                        mostrarLogin()
-                    }
+            if (todosLosCanales.isEmpty()) {
+                throw Exception("Las listas no contienen canales")
+            }
 
-                    fondo.addView(mensaje)
-                    fondo.addView(salir)
+            runOnUiThread {
+                canales.clear()
+                canales.addAll(todosLosCanales)
+
+                listaActual = canales.first().lista
+                ultimaCategoria = "Todas"
+
+                mostrarCanales()
+            }
+
+        } catch (e: Exception) {
+            runOnUiThread {
+                fondo.removeAllViews()
+
+                mensaje.text = e.message
+                    ?: "Error al cargar programación"
+
+                val salir = Button(this)
+                salir.text = "VOLVER"
+
+                salir.setOnClickListener {
+                    cerrarSesion()
                 }
+
+                fondo.addView(mensaje)
+                fondo.addView(salir)
             }
         }
     }
+}
+
 
     private fun leerM3U(texto: String): List<Canal> {
         val resultado = mutableListOf<Canal>()
