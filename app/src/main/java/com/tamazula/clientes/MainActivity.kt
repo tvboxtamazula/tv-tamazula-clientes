@@ -543,12 +543,10 @@ fondo.addView(selectorListas)
         lista.setOnItemClickListener { _, _, position, _ ->
             val categoria = categorias.selectedItem?.toString() ?: "Todas"
 
-            val filtrados = if (categoria == "Todas") {
-                canales
-            } else {
-                canales.filter { it.categoria == categoria }
-            }
-
+            val filtrados = canales.filter {
+    it.lista == listaActual &&
+    (categoria == "Todas" || it.categoria == categoria)
+}
             if (position in filtrados.indices) {
                 reproducirCanal(filtrados[position])
             }
