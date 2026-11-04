@@ -454,6 +454,23 @@ botonLogout.setOnClickListener {
 }
 
 fondo.addView(botonLogout)
+selectorListas = Spinner(this)
+
+val nombresListas = canales
+    .map { it.lista }
+    .distinct()
+
+selectorListas.adapter = ArrayAdapter(
+    this,
+    android.R.layout.simple_spinner_dropdown_item,
+    nombresListas
+)
+
+selectorListas.setSelection(
+    nombresListas.indexOf(listaActual).coerceAtLeast(0)
+)
+
+fondo.addView(selectorListas)
 
         val vista = PlayerView(this)
         vista.layoutParams = LinearLayout.LayoutParams(
