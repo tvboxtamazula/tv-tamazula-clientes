@@ -609,17 +609,12 @@ buscador.addTextChangedListener(
                     actualizarCanales(ultimaCategoria)
                 }
             }
-        lista.setOnItemClickListener { _, _, position, _ ->
-            val categoria = categorias.selectedItem?.toString() ?: "Todas"
+       lista.setOnItemClickListener { _, _, position, _ ->
 
-            val filtrados = canales.filter {
-    it.lista == listaActual &&
-    (categoria == "Todas" || it.categoria == categoria)
+    if (position in canalesMostrados.indices) {
+        reproducirCanal(canalesMostrados[position])
+    }
 }
-            if (position in filtrados.indices) {
-                reproducirCanal(filtrados[position])
-            }
-        }
 
         val posicion = nombres.indexOf(ultimaCategoria)
             .coerceAtLeast(0)
