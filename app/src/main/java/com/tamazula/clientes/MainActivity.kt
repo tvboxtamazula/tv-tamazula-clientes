@@ -415,7 +415,13 @@ private fun cargarPlaylist() {
 
     private fun mostrarCanales() {
         if (reproductor == null) {
-            reproductor = ExoPlayer.Builder(this)
+           val renderersFactory = DefaultRenderersFactory(this)
+    .setExtensionRendererMode(
+        DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+    )
+    .setEnableDecoderFallback(true)
+
+reproductor = ExoPlayer.Builder(this, renderersFactory)
     .setAudioAttributes(
         androidx.media3.common.AudioAttributes.Builder()
             .setUsage(androidx.media3.common.C.USAGE_MEDIA)
