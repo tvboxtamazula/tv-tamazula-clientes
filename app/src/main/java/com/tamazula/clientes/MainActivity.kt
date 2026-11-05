@@ -415,7 +415,15 @@ private fun cargarPlaylist() {
 
     private fun mostrarCanales() {
         if (reproductor == null) {
-            reproductor = ExoPlayer.Builder(this).build()
+            reproductor = ExoPlayer.Builder(this)
+    .setAudioAttributes(
+        androidx.media3.common.AudioAttributes.Builder()
+            .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+            .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+            .build(),
+        true
+    )
+    .build()
 
             reproductor?.addListener(
                 object : Player.Listener {
