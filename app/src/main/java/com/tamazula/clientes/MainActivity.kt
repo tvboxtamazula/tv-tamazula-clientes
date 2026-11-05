@@ -682,16 +682,23 @@ private fun actualizarCanales(
     categoria: String,
     busqueda: String = ""
 ) {
-    val filtrados = canales.filter {
-        it.lista == listaActual &&
-        (categoria == "Todas" || it.categoria == categoria) &&
-        it.nombre.contains(busqueda.trim(), ignoreCase = true)
-    }
+    canalesMostrados.clear()
+
+    canalesMostrados.addAll(
+        canales.filter {
+            it.lista == listaActual &&
+            (categoria == "Todas" || it.categoria == categoria) &&
+            it.nombre.contains(
+                busqueda.trim(),
+                ignoreCase = true
+            )
+        }
+    )
 
     lista.adapter = ArrayAdapter(
         this,
         android.R.layout.simple_list_item_1,
-        filtrados.map { it.nombre }
+        canalesMostrados.map { it.nombre }
     )
 }
 
