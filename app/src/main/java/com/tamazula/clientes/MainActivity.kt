@@ -526,7 +526,46 @@ fondo.addView(selectorListas)
             nombres
         )
         fondo.addView(categorias)
+val buscador = EditText(this)
+buscador.hint = "Buscar canal..."
+buscador.textSize = 16f
+buscador.setSingleLine(true)
 
+fondo.addView(
+    buscador,
+    LinearLayout.LayoutParams(
+        LinearLayout.LayoutParams.MATCH_PARENT,
+        LinearLayout.LayoutParams.WRAP_CONTENT
+    )
+)
+
+buscador.addTextChangedListener(
+    object : android.text.TextWatcher {
+
+        override fun beforeTextChanged(
+            s: CharSequence?,
+            start: Int,
+            count: Int,
+            after: Int
+        ) {}
+
+        override fun onTextChanged(
+            s: CharSequence?,
+            start: Int,
+            before: Int,
+            count: Int
+        ) {
+            actualizarCanales(
+                categorias.selectedItem?.toString() ?: "Todas",
+                s.toString()
+            )
+        }
+
+        override fun afterTextChanged(
+            s: android.text.Editable?
+        ) {}
+    }
+)
         lista = ListView(this)
         fondo.addView(
             lista,
