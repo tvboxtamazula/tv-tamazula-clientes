@@ -34,7 +34,7 @@ class MainActivity : Activity() {
 
     private var token = ""
     private val canales = mutableListOf<Canal>()
-
+    private val canalesMostrados = mutableListOf<Canal>()
     private lateinit var fondo: LinearLayout
     private lateinit var mensaje: TextView
     private lateinit var lista: ListView
