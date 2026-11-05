@@ -678,10 +678,14 @@ buscador.addTextChangedListener(
     }
 
    
-private fun actualizarCanales(categoria: String) {
+private fun actualizarCanales(
+    categoria: String,
+    busqueda: String = ""
+) {
     val filtrados = canales.filter {
         it.lista == listaActual &&
-        (categoria == "Todas" || it.categoria == categoria)
+        (categoria == "Todas" || it.categoria == categoria) &&
+        it.nombre.contains(busqueda.trim(), ignoreCase = true)
     }
 
     lista.adapter = ArrayAdapter(
@@ -690,7 +694,6 @@ private fun actualizarCanales(categoria: String) {
         filtrados.map { it.nombre }
     )
 }
-
 
     private fun reproducirCanal(canal: Canal) {
         try {
