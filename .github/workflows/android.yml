@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,8 +29,21 @@ jobs:
       - name: Crear APK
         run: gradle wrapper --gradle-version 8.9 && ./gradlew assembleDebug
 
-      - name: Guardar APK
+      - name: Preparar APK para descarga
+        run: cp app/build/outputs/apk/debug/app-debug.apk tamazulatv.apk
+
+      - name: Guardar APK como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: TV-TAMAZULA-CLIENTES
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: tamazulatv.apk
+
+      - name: Publicar APK en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: TV TAMAZULA CLIENTES ${{ github.run_number }}
+          body: Nueva versión de TV TAMAZULA CLIENTES.
+          make_latest: true
+          files: tamazulatv.apk
+          fail_on_unmatched_files: true
