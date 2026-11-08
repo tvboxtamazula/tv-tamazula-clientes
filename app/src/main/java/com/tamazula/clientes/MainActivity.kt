@@ -100,11 +100,13 @@ private val tareaActividad = object : Runnable {
         token = getSharedPreferences("TV_TAMAZULA", MODE_PRIVATE)
             .getString("token", "") ?: ""
 
-        if (token.isNotEmpty()) {
-            cargarPlaylist()
-        } else {
-            mostrarLogin()
-        }
+       if (token.isNotEmpty()) {
+    manejadorActividad.removeCallbacks(tareaActividad)
+    manejadorActividad.post(tareaActividad)
+    cargarPlaylist()
+} else {
+    mostrarLogin()
+}
     }
 
     private fun prepararPantalla(): LinearLayout {
