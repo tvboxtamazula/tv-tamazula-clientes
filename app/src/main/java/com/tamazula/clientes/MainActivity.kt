@@ -108,7 +108,19 @@ private val tareaActividad = object : Runnable {
     mostrarLogin()
 }
     }
+override fun onResume() {
+    super.onResume()
 
+    if (token.isNotEmpty()) {
+        manejadorActividad.removeCallbacks(tareaActividad)
+        manejadorActividad.post(tareaActividad)
+    }
+}
+
+override fun onPause() {
+    manejadorActividad.removeCallbacks(tareaActividad)
+    super.onPause()
+}
     private fun prepararPantalla(): LinearLayout {
         fondo = LinearLayout(this)
         fondo.orientation = LinearLayout.VERTICAL
