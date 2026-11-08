@@ -1,5 +1,7 @@
 
 package com.tamazula.clientes
+import android.os.Handler
+import android.os.Looper
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import android.app.Activity
 import android.content.pm.ActivityInfo
