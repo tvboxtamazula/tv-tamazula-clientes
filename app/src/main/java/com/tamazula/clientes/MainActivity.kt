@@ -283,8 +283,11 @@ private fun mostrarLogin() {
                     .apply()
 
                 runOnUiThread {
-                    cargarPlaylist()
-                }
+    manejadorActividad.removeCallbacks(tareaActividad)
+    manejadorActividad.post(tareaActividad)
+
+    cargarPlaylist()
+}
 
             } catch (e: Exception) {
                 runOnUiThread {
