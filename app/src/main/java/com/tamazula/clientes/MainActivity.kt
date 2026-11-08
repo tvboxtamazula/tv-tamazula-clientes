@@ -790,6 +790,7 @@ private fun confirmarCerrarSesion() {
 }
 
 private fun cerrarSesion() {
+    manejadorActividad.removeCallbacks(tareaActividad)
     liberarReproductor()
 
     token = ""
