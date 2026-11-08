@@ -50,7 +50,40 @@ class MainActivity : Activity() {
     private var pantallaCompleta = false
     private var ultimaCategoria = "Todas"
     private var canalActual: Canal? = null
+private val manejadorActividad = Handler(Looper.getMainLooper())
 
+private val tareaActividad = object : Runnable {
+    override fun run() {
+        if (token.isNotEmpty()) {
+            thread {
+                try {
+                    val conexion = URL("$servidor/api/my-presence")
+                        .openConnection() as HttpURLConnection
+
+                    conexion.requestMethod = "POST"
+                    conexion.setRequestProperty(
+                        "Authorization",
+                        "Bearer $token"
+                    )
+                    conexion.connectTimeout = 10000
+                    conexion.readTimeout = 10000
+
+                    conexion.responseCode
+                    conexion.disconnect()
+
+                } catch (e: Exception) {
+                    android.util.Log.e(
+                        "TV_TAMAZULA",
+                        "Error al registrar actividad",
+                        e
+                    )
+                }
+            }
+        }
+
+        manejadorActividad.postDelayed(this, 60000)
+    }
+}
     private val blanco = Color.WHITE
     private val oscuro = Color.rgb(15, 15, 20)
 
