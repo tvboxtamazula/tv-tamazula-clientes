@@ -53,6 +53,12 @@ class MainActivity : Activity() {
     private var pantallaCompleta = false
     private var ultimaCategoria = "Todas"
     private var canalActual: Canal? = null
+    private val dispositivoId by lazy {
+    Settings.Secure.getString(
+        contentResolver,
+        Settings.Secure.ANDROID_ID
+    ) ?: "dispositivo-desconocido"
+}
 private val manejadorActividad = Handler(Looper.getMainLooper())
 
 private val tareaActividad = object : Runnable {
