@@ -69,17 +69,31 @@ private val tareaActividad = object : Runnable {
                     val conexion = URL("$servidor/api/my-presence")
                         .openConnection() as HttpURLConnection
 
-                    conexion.requestMethod = "POST"
-                    conexion.setRequestProperty(
-                        "Authorization",
-                        "Bearer $token"
-                    )
-                    conexion.connectTimeout = 10000
-                    conexion.readTimeout = 10000
+                   conexion.requestMethod = "POST"
+conexion.doOutput = true
 
-                    conexion.responseCode
-                    conexion.disconnect()
+conexion.setRequestProperty(
+    "Authorization",
+    "Bearer $token"
+)
 
+conexion.setRequestProperty(
+    "Content-Type",
+    "application/json"
+)
+
+conexion.connectTimeout = 10000
+conexion.readTimeout = 10000
+
+val datos = JSONObject()
+datos.put("device_id", dispositivoId)
+
+conexion.outputStream.use {
+    it.write(datos.toString().toByteArray(Charsets.UTF_8))
+}
+
+conexion.responseCode
+conexion.disconnect()
                 } catch (e: Exception) {
                     android.util.Log.e(
                         "TV_TAMAZULA",
